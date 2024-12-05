@@ -9,7 +9,10 @@ import SearchSort from "./SearchSort";
 const MovieList = () => {
     const [selectedMovieId,setSelectedMovieId] = useState<number>(0);
     const [movies,setMovies] = useState<any>([]);
+    const [searchQuery,setSearchQuery] = useState('');
+    const [sortVal,setSortVal] = useState('');
     const dispatch = useDispatch();
+
     const {isLoading,moviesList,movies_count} = useSelector((state:any) => ({
         isLoading: state.MOVIES.isLoading,
         moviesList: state.MOVIES.movies,
@@ -19,34 +22,30 @@ const MovieList = () => {
         setSelectedMovieId(0)
         dispatch(fetchMovies({}) as any);
         dispatch(clearMovieDetailsAction({})as any)
+    },[dispatch]);
+    
+    const movieClickHandler = useCallback((movieId: number) => {
+        if (window.outerWidth < 992 && selectedMovieId !== 0 && selectedMovieId === movieId) {
+            setSelectedMovieId(0);
+            dispatch(clearMovieDetailsAction({}) as any);
+        } else {
+            setSelectedMovieId(movieId);
+        }
+    }, [selectedMovieId, dispatch]);
+    
+    const handleSearch = useCallback((val: string) => {
+        setSearchQuery(val)
     },[]);
-    useEffect(() => {
-        setMovies(moviesList)
-    },[moviesList])
-    const movieClickHandler = (movieId:number) => {
-        if(window.outerWidth < 992 && selectedMovieId !== 0 && selectedMovieId === movieId){
-            setSelectedMovieId(0);
-            dispatch(clearMovieDetailsAction({})as any);
-        }else{
-            setSelectedMovieId(movieId)
-        }
-    };
-    const handleSearch = (val:string) => {
-        const searchedMovies = moviesList.filter((m:any) => m.title.toLowerCase().includes(val.toLocaleLowerCase()));
-        const allMovieId = searchedMovies.map((m:any) => m.episode_id);
-        if(!allMovieId.includes(selectedMovieId)){
-            setSelectedMovieId(0);
-        }
-        setMovies(searchedMovies);
-    };
+    
     const handleSort = (val:string) => {
-        const key = val === 'Episode' ? 'episode_id' : 'title';
-        const searchedMovies = moviesList.slice().sort((m:any,n:any) => m[key] > n[key] ? 1 : -1);
-        setMovies(searchedMovies);
+        setSortVal(val);
     };
 
     const getMovieList = () => {
-        const list = movies.map((movie:any,index:number) => {
+        const key = sortVal === 'Episode' ? 'episode_id' : 'title';
+        const sortedMovies = moviesList.slice().sort((m:any,n:any) => m[key] > n[key] ? 1 : -1);
+        const searchedMovies = sortedMovies.filter((movie:any) => movie.title.toLowerCase().includes((searchQuery.trim().toLowerCase())));
+        const list = searchedMovies.map((movie:any,index:number) => {
             return (
                 <div className="movie-row" key={index}>
                     <div className="row" key={`${index}`} onClick={() => movieClickHandler(movie.episode_id)}>
@@ -78,7 +77,7 @@ const MovieList = () => {
             )}
             {isLoading ? (
                 <div className="col-lg-12">
-                    <div className="loader-icon-wrapper"><img src={Svg} className="loader-icon"/></div>
+                    <div className="loader-icon-wrapper"><img src={Svg} className="loader-icon" alt="loader-icon"/></div>
                 </div>
             ) : 
                 <div className="col-lg-6">

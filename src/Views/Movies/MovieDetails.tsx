@@ -55,7 +55,7 @@ const MovieDetails = (props:any) => {
     }
     return isPosterDataLoading ? (
             <div className="col-lg-6">
-                <div className="h-100 d-flex align-items-center justify-content-center"><img src={Svg} className="loader-icon"/></div>
+                <div className="h-100 d-flex align-items-center justify-content-center"><img src={Svg} className="loader-icon" alt="loader-icon"/></div>
             </div>
         ) :  selectedMovie !== null ? (
         <div className="col-lg-6">
